@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <title></title>
+  <script src="https://unpkg.com/meyda@3.1.1/dist/web/meyda.min.js"></script>
+  <script type="text/javascript">
+    function callBack(arg) {
+      console.log('feature callback');
+      console.log(arg);
+    }
+
+    navigator.getUserMedia = (navigator.getUserMedia ||
+      navigator.webkitGetUserMedia ||
+      navigator.mozGetUserMedia ||
+      navigator.msGetUserMedia);
+
+    // define other variables
+
+    var context = new(window.AudioContext || window.webkitAudioContext)();
+    var myAudio = document.querySelector('audio');
+
+    if (navigator.getUserMedia) {
+      console.log('getUserMedia supported.');
+      navigator.getUserMedia({ audio: true },
+
+        // Success callback
+        function(stream) {
+          // Create a MediaStreamAudioSourceNode
+          // Feed the HTMLMediaElement into it
+          var source = context.createMediaStreamSource(stream);
+
+          var options = {
+            audioContext: context, // required
+            source: source, // required
+            bufferSize: 512, // required
+            windowingFunction: 'hamming', // optional
+            featureExtractors: ['rms'], // optional - A string, or an array of strings containing the names of features you wish to extract.
+            callback: callBack, // optional callback in which to receive the features for each buffer
+          };
+          var meydaAnalyzer = Meyda.createMeydaAnalyzer(options);
+
+          meydaAnalyzer.start();
+          meydaAnalyzer.setSource(source);
+        },
+
+        // Error callback
+        function(err) {
+          console.log('The following gUM error occured: ' + err.message);
+        }
+      );
+    } else {
+      console.log('getUserMedia not supported on your browser!');
+    }
+    </script>
+  </head>
+
+  <body>
+  </body>
+
+  </html>
