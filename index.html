@@ -6,10 +6,11 @@
   <title></title>
   <script src="https://unpkg.com/meyda@3.1.1/dist/web/meyda.min.js"></script>
   <script type="text/javascript">
-    function callBack(arg) {
-      console.log('feature callback');
-      console.log(arg);
+    function onGetFeatures(features) {
+      console.log(features.mfcc);
     }
+
+    var meydaAnalyzer;
 
     navigator.getUserMedia = (navigator.getUserMedia ||
       navigator.webkitGetUserMedia ||
@@ -22,41 +23,49 @@
     var myAudio = document.querySelector('audio');
 
     if (navigator.getUserMedia) {
-      console.log('getUserMedia supported.');
       navigator.getUserMedia({ audio: true },
 
         // Success callback
-        function(stream) {
-          // Create a MediaStreamAudioSourceNode
-          // Feed the HTMLMediaElement into it
+        function (stream) {
+          // Create a MediaStreamAudioSourceNode and feed the HTMLMediaElement into it
           var source = context.createMediaStreamSource(stream);
-
           var options = {
             audioContext: context, // required
             source: source, // required
-            bufferSize: 512, // required
+            bufferSize: 256, // required
             windowingFunction: 'hamming', // optional
-            featureExtractors: ['rms'], // optional - A string, or an array of strings containing the names of features you wish to extract.
-            callback: callBack, // optional callback in which to receive the features for each buffer
+            featureExtractors: ['rms', 'mfcc'], // optional - A string, or an array of strings containing the names of features you wish to extract.
+            callback: onGetFeatures, // optional callback in which to receive the features for each buffer
           };
-          var meydaAnalyzer = Meyda.createMeydaAnalyzer(options);
 
-          meydaAnalyzer.start();
+          meydaAnalyzer = Meyda.createMeydaAnalyzer(options);
           meydaAnalyzer.setSource(source);
+
         },
 
         // Error callback
-        function(err) {
+        function (err) {
           console.log('The following gUM error occured: ' + err.message);
         }
       );
     } else {
       console.log('getUserMedia not supported on your browser!');
     }
+
+    function startAnalyzer() {
+      meydaAnalyzer.start();
+    };
+
+    function stopAnalyzer() {
+      meydaAnalyzer.stop();
+    };
+
     </script>
   </head>
 
   <body>
+    <button type="button" name="button" onclick="startAnalyzer()">start</button>
+    <button type="button" name="button" onclick="stopAnalyzer()">stop</button>
   </body>
 
   </html>
